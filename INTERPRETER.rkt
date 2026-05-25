@@ -123,10 +123,13 @@
     gramatica))
 
 ; =========================================
-; AMBIENTES
-; =========================================
-; Representación de ambientes léxicos
-; utilizados para almacenar variables.
+;DATATYPE: ambiente
+;=========================================
+;PROPÓSITO: Definir la estructura recursiva para los ambientes léxicos.
+;VARIANTES:
+;- (vacio): Representa un ambiente sinvariables ligadas.
+;- (extendido ids vals old-env):Añade una lista de simbolos (ids)y sus
+;correspondientes valores (vals) sobre un ambiente previo (old-env).
 
 (define scheme-value?
   (lambda (v) #t))
@@ -172,9 +175,17 @@
          (loop (cdr lst)
                (+ pos 1))]))))
 
-;; Busca una variable dentro del ambiente.
-;; Retorna su valor si existe.
-;; En caso contrario genera un error.
+
+; =========================================
+;FUNCIÓN: buscar-variable
+;=========================================
+;PROPÓSITO:Buscar el valor asociado a un identificador (@id) en un ambiente dado
+
+;ARGUMENTOS:
+;- id: El símbolo que representa la variable a buscar
+;- env: El ambiente actual en donde se realiza la búsqueda.
+
+;RETORNA: El valor de la variable si existe, o produce un error si llega a (vacio).
 
 (define buscar-variable
 
@@ -241,9 +252,17 @@
           "No implementada")))))
 
 
-;; Función principal del intérprete.
-;; Evalúa expresiones del lenguaje
-;; utilizando un ambiente dado.
+; =========================================
+;FUNCIÓN: evaluar-expresion
+;=========================================
+;PROPÓSITO:Evaluar de forma recursiva una estructura de Sintaxis Abstracta (AST)
+;bajo un contexto de ambiente determinado.
+;
+;ARGUMENTOS:
+;- exp: Árbol de sintaxis abstracta producido por el parser.
+;- env: Ambiente en el que se resolverán los identificadores hallados.
+;
+;RETORNA:El resultado expresado de la evaluación (Número, Texto, Booleano, etc.)
 
 
 (define evaluar-expresion
