@@ -328,3 +328,40 @@
   (scan&parse "\"hola\""))
 (evaluar-programa
   (scan&parse "@a"))
+
+
+
+
+;=========================================
+;PRUEBAS
+;=========================================
+(define correr-prueba
+  (lambda (nombre string-codigo resultado-esperado)
+    (let ((resultado (evaluar-programa (scan&parse string-codigo))))
+      (if (equal? resultado resultado-esperado)
+          (eopl:printf "Prueba [~a]: PASÓ (Retornó: ~v)\n" nombre resultado)
+          (eopl:printf "Prueba [~a]: FALLÓ (Esperaba: ~v | Obtuvo: ~v)\n" nombre resultado-esperado resultado)))))
+
+;Pruebas de Literales (Números y Textos)
+(correr-prueba "Literal Numérico Entero Positivo" "42" 42)
+(correr-prueba "Literal Numérico Decimal Positivo" "3.1416" 3.1416)
+(correr-prueba "Literal Numérico Entero Negativo" "-10" -10)
+(correr-prueba "Literal Numérico Decimal Negativo" "-2.5" -2.5)
+(correr-prueba "Literal de Texto simple" "\"Hola Mundo\"" "Hola Mundo")
+(correr-prueba "Literal de Texto con guiones" "\"clase_3_flp\"" "clase_3_flp")
+
+;Pruebas de Ambiente Inicial
+(correr-prueba "Variable entera @a" "@a" 1)
+(correr-prueba "Variable entera @b" "@b" 2)
+(correr-prueba "Variable de texto @d" "@d" "hola")
+(correr-prueba "Variable de texto @e" "@e" "FLP")
+
+;Pruebas de Primitivas Binarias Básicas
+(correr-prueba "Suma simple" "(4 + 5)" 9)
+(correr-prueba "Sesta con virgulilla simple" "(10 ~ 4)" 6)
+(correr-prueba "Sesta que produce negativo" "(4 ~ 5)" -1)
+(correr-prueba "Operaciones anidadas basicas" "((2 + 3) + @a)" 6)
+
+;Pruebas de Primitivas Unarias Básicas
+(correr-prueba "Sustracción unitaria sub1" "sub1(5)" 4)
+(correr-prueba "Adición unitaria add1" "add1(@c)" 4)
