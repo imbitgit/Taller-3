@@ -1,5 +1,7 @@
 #lang eopl
 
+;funcion para probar el intérprete, se puede usar para evaluar cualquier programa del lenguaje.
+;(provide scan&parse evaluar-programa valor-verdad?)
 ; =========================================
 ; ESPECIFICACIÓN LÉXICA
 ; =========================================
@@ -96,7 +98,7 @@
     (primitiva-binaria (">=") primitiva-mayor-igual)
     (primitiva-binaria ("<=") primitiva-menor-igual)
     (primitiva-binaria ("!=") primitiva-diferente)
-    (primitiva-binaria ("==") primitiva-igual)
+    (primitiva-binaria ("==") primitiva-comparador-igual)
 
     (primitiva-unaria ("longitud") primitiva-longitud)
     (primitiva-unaria ("add1") primitiva-add1)
@@ -225,6 +227,33 @@
       (primitiva-resta ()
         (- val1 val2))
 
+      (primitiva-multiplicacion ()
+        (* val1 val2))
+
+      (primitiva-division ()
+        (/ val1 val2))
+
+      (primitiva-concat ()
+        (string-append val1 val2))
+
+      (primitiva-mayor ()
+        (> val1 val2))
+
+      (primitiva-menor ()
+        (< val1 val2))
+
+      (primitiva-mayor-igual ()
+        (>= val1 val2))
+
+      (primitiva-menor-igual ()
+        (<= val1 val2))
+
+      (primitiva-diferente ()
+        (not (equal? val1 val2)))
+
+      (primitiva-comparador-igual ()
+        (equal? val1 val2))
+
       (else
         (eopl:error
           'primitiva-binaria
@@ -246,6 +275,11 @@
       (primitiva-sub1 ()
         (- val 1))
 
+      (primitiva-longitud ()
+        (string-length val))
+      
+      (primitiva-negacion ()
+        (- val))
       (else
         (eopl:error
           'primitiva-unaria
@@ -299,6 +333,24 @@
           (evaluar-primitiva-unaria
             prim
             val))))))
+
+
+;; En una expresión numérica, 0 es falso y cualquier otro valor es verdadero.
+;; Devuelve 0 para falso y 1 para verdadero.
+(define valor-verdad?
+
+  (lambda (valor)
+
+    (cond
+
+      [(number? valor)
+       (if (zero? valor) 0 1)]
+
+      [else
+       (eopl:error
+         'valor-verdad?
+         "Error, valor no numérico ~s"
+         valor)])))
 
 
 ;; Evalúa un programa completo
