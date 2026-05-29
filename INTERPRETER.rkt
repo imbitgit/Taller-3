@@ -44,7 +44,7 @@
       number)
 
     (texto
-      (letter (arbno (or letter digit "_" " ")))
+      ("\"" letter (arbno (or letter digit "_" " ")) "\"") 
       string)
 ))
 
@@ -73,7 +73,7 @@
       numero-lit)
 
     (expresion
-      ("\"" texto "\"")
+      (texto)
       texto-lit)
 
     (expresion
@@ -271,22 +271,22 @@
         (string-append val1 val2))
 
       (primitiva-mayor ()
-        (> val1 val2))
+        (if (> val1 val2) 1 0))
 
       (primitiva-menor ()
-        (< val1 val2))
+        (if (< val1 val2) 1 0))
 
       (primitiva-mayor-igual ()
-        (>= val1 val2))
+        (if (>= val1 val2) 1 0))
 
       (primitiva-menor-igual ()
-        (<= val1 val2))
+        (if (<= val1 val2) 1 0))
 
       (primitiva-diferente ()
-        (not (equal? val1 val2)))
+        (if (not (equal? val1 val2)) 1 0))
 
       (primitiva-comparador-igual ()
-        (equal? val1 val2))
+        (if (equal? val1 val2) 1 0))
 
       (else
         (eopl:error
@@ -313,7 +313,7 @@
         (string-length val))
       
       (primitiva-negacion ()
-        (- val))
+        (if (zero? val) 1 0))
       (else
         (eopl:error
           'primitiva-unaria
@@ -371,7 +371,11 @@
         num)
 
       (texto-lit (txt)
-        txt)
+
+        substring
+        txt
+        1
+        (- (string-length txt) 1))
 
       (var-exp (id)
         (buscar-variable id env))
@@ -470,7 +474,7 @@
 (evaluar-programa
   (scan&parse "5"))
 (evaluar-programa
-  (scan&parse "\"hola\""))
+  (scan&parse "\"hola\"))
 (evaluar-programa
   (scan&parse "@a"))
 
@@ -485,7 +489,7 @@
     (let ((resultado (evaluar-programa (scan&parse string-codigo))))
       (if (equal? resultado resultado-esperado)
           (eopl:printf "Prueba [~a]: PASÓ (Retornó: ~v)\n" nombre resultado)
-          (eopl:printf "Prueba [~a]: FALLÓ (Esperaba: ~v | Obtuvo: ~v)\n" nombre resultado-esperado resultado)))))
+          (eopl:printf "Prueba [~a]: FALLÓ (Esperaba: ~v Obtuvo: ~v)\n" nombre resultado-esperado resultado)))))
 
 ;Pruebas de Literales (Números y Textos)
 (correr-prueba "Literal Numérico Entero Positivo" "42" 42)
@@ -507,7 +511,7 @@
 (correr-prueba "Sesta que produce negativo" "(4 ~ 5)" -1)
 (correr-prueba "Multiplicación simple" "(5 * 8)" 40)
 (correr-prueba "División simple" "(12 / 6)" 2)
-;(correr-prueba "Concatenación de dos palabras" "(\"hola\" concat \"mundo\")" "hola mundo")
+(correr-prueba "Concatenación de dos palabras" "(\"hola\" concat \"mundo\")" "hola mundo")
 (correr-prueba "Operaciones anidadas basicas" "((2 + 3) + @a)" 6)
 
 ;Pruebas de Primitivas Unarias Básicas
