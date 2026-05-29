@@ -44,7 +44,7 @@
       number)
 
     (texto
-      (letter (arbno (or letter digit "_" " ")))
+      ("\"" letter (arbno (or letter digit "_" " ")) "\"") 
       string)
 ))
 
@@ -73,7 +73,7 @@
       numero-lit)
 
     (expresion
-      ("\"" texto "\"")
+      (texto)
       texto-lit)
 
     (expresion
@@ -98,7 +98,26 @@
       "finEval")
      app-exp)
     
+    (expresion
+      ("Si" expresion
+        "{"
+        expresion
+        "}"
+        "sino"
+        "{"
+        expresion
+        "}")
+        condicional-exp)
 
+    (expresion
+      ("declarar"
+        "("
+      (arbno identificador "=" expresion ";")
+        ")"
+        "{"
+        expresion
+        "}")
+        variableLocal-exp)
     
 
     (primitiva-binaria ("+") primitiva-suma)
@@ -268,25 +287,31 @@
         (/ val1 val2))
 
       (primitiva-concat ()
-        (string-append val1 val2))
+        (let ((s1 (cond ((string? val1) val1)
+                        ((number? val1) (number->string val1))
+                        (else (eopl:error 'concat "concat: expected string or number ~s" val1))))
+              (s2 (cond ((string? val2) val2)
+                        ((number? val2) (number->string val2))
+                        (else (eopl:error 'concat "concat: expected string or number ~s" val2)))))
+          (string-append s1 s2)))
 
       (primitiva-mayor ()
-        (> val1 val2))
+        (if (> val1 val2) 1 0))
 
       (primitiva-menor ()
-        (< val1 val2))
+        (if (< val1 val2) 1 0))
 
       (primitiva-mayor-igual ()
-        (>= val1 val2))
+        (if (>= val1 val2) 1 0))
 
       (primitiva-menor-igual ()
-        (<= val1 val2))
+        (if (<= val1 val2) 1 0))
 
       (primitiva-diferente ()
-        (not (equal? val1 val2)))
+        (if (not (equal? val1 val2)) 1 0))
 
       (primitiva-comparador-igual ()
-        (equal? val1 val2))
+        (if (equal? val1 val2) 1 0))
 
       (else
         (eopl:error
@@ -313,7 +338,7 @@
         (string-length val))
       
       (primitiva-negacion ()
-        (- val))
+        (if (zero? val) 1 0))
       (else
         (eopl:error
           'primitiva-unaria
@@ -371,7 +396,11 @@
         num)
 
       (texto-lit (txt)
-        txt)
+
+  (substring
+    txt
+    1
+    (- (string-length txt) 1)))
 
       (var-exp (id)
         (buscar-variable id env))
@@ -394,6 +423,40 @@
           prim
           val)))
 
+      (condicional-exp (test-exp true-exp false-exp)
+        (if (not (zero? (evaluar-expresion
+         test-exp
+         env)))
+
+      (evaluar-expresion
+        true-exp
+        env)
+
+      (evaluar-expresion
+        false-exp
+        env)))
+
+
+      (variableLocal-exp
+        (ids exps cuerpo)
+
+          (let (
+       (valores
+        (map
+         (lambda (x)
+           (evaluar-expresion x env))
+         exps))
+
+       )
+
+      (evaluar-expresion
+
+      cuerpo
+
+      (extendido
+        ids
+        valores
+        env))))
 ; ===================================
 ; procedimiento-exp
 ; ===================================
@@ -485,7 +548,7 @@
     (let ((resultado (evaluar-programa (scan&parse string-codigo))))
       (if (equal? resultado resultado-esperado)
           (eopl:printf "Prueba [~a]: PASÓ (Retornó: ~v)\n" nombre resultado)
-          (eopl:printf "Prueba [~a]: FALLÓ (Esperaba: ~v | Obtuvo: ~v)\n" nombre resultado-esperado resultado)))))
+          (eopl:printf "Prueba [~a]: FALLÓ (Esperaba: ~v Obtuvo: ~v)\n" nombre resultado-esperado resultado)))))
 
 ;Pruebas de Literales (Números y Textos)
 (correr-prueba "Literal Numérico Entero Positivo" "42" 42)
@@ -505,6 +568,9 @@
 (correr-prueba "Suma simple" "(4 + 5)" 9)
 (correr-prueba "Sesta con virgulilla simple" "(10 ~ 4)" 6)
 (correr-prueba "Sesta que produce negativo" "(4 ~ 5)" -1)
+(correr-prueba "Multiplicación simple" "(5 * 8)" 40)
+(correr-prueba "División simple" "(12 / 6)" 2)
+(correr-prueba "Concatenación de dos palabras" "(\"hola\" concat \"mundo\")" "holamundo")
 (correr-prueba "Operaciones anidadas basicas" "((2 + 3) + @a)" 6)
 
 ;Pruebas de Primitivas Unarias Básicas
