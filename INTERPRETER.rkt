@@ -83,10 +83,23 @@
     (expresion
       ("(" expresion primitiva-binaria expresion ")")
       primapp-bin-exp)
-
     (expresion
-      (primitiva-unaria "(" expresion ")")
-      primapp-un-exp)
+     (primitiva-unaria "(" expresion ")")
+     primapp-un-exp)
+    (expresion
+     ("procedimiento"
+      "(" (separated-list identificador ",") ")"
+      "{" expresion "}")
+     procedimiento-exp)
+    (expresion
+     ("evaluar"
+      expresion
+      "(" (separated-list expresion ",") ")"
+      "finEval")
+     app-exp)
+    
+
+    
 
     (primitiva-binaria ("+") primitiva-suma)
     (primitiva-binaria ("~") primitiva-resta)
@@ -145,6 +158,27 @@
     (ids (list-of symbol?))
     (vals (list-of scheme-value?))
     (old-env ambiente?)))
+
+
+; =========================================
+; DATATYPE: procVal
+; =========================================
+; Representa procedimientos (closures).
+;
+; Una cerradura almacena:
+; - parámetros
+; - cuerpo
+; - ambiente léxico
+; =========================================
+
+(define-datatype procVal procVal?
+  (cerradura
+   (lista-ID
+    (list-of symbol?))
+   (cuerpo
+    expresion?)
+   (amb
+    ambiente?)))
 
 
 
@@ -285,6 +319,34 @@
           'primitiva-unaria
           "No implementada")))))
 
+; =========================================
+; FUNCIÓN: aplicar-procedimiento
+; =========================================
+; Aplica una cerradura a una lista
+; de argumentos ya evaluados.
+;
+; proc -> closure
+; argumentos -> valores evaluados
+; =========================================
+
+(define aplicar-procedimiento
+
+  (lambda (proc argumentos)
+
+    (cases procVal proc
+
+      (cerradura
+        (ids cuerpo amb)
+
+        (evaluar-expresion
+
+          cuerpo
+
+          (extendido
+            ids
+            argumentos
+            amb))))))
+
 
 ; =========================================
 ;FUNCIÓN: evaluar-expresion
@@ -326,13 +388,43 @@
             val2)))
 
       (primapp-un-exp (prim exp)
+                      (let (
+                            (val (evaluar-expresion exp env)))    
+         (evaluar-primitiva-unaria
+          prim
+          val)))
 
-        (let (
-              (val (evaluar-expresion exp env)))
+; ===================================
+; procedimiento-exp
+; ===================================
+      (procedimiento-exp
+       (ids cuerpo)
+       (cerradura
+        ids
+        cuerpo
+        env))
 
-          (evaluar-primitiva-unaria
-            prim
-            val))))))
+; ===================================
+; app-exp
+; ===================================
+      (app-exp
+       (rator rands)
+       (let (
+
+             (proc
+              (evaluar-expresion
+               rator
+               env))
+             (args
+              (map
+               (lambda (x)
+                 (evaluar-expresion
+                  x
+                  env))
+               rands)))
+         (aplicar-procedimiento
+          proc
+          args))))))
 
 
 ;; En una expresión numérica, 0 es falso y cualquier otro valor es verdadero.
@@ -355,6 +447,7 @@
 
 ;; Evalúa un programa completo
 ;; utilizando el ambiente inicial.
+
 
 
 (define evaluar-programa
