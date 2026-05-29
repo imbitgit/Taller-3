@@ -412,6 +412,9 @@
 (correr-prueba "Suma simple" "(4 + 5)" 9)
 (correr-prueba "Sesta con virgulilla simple" "(10 ~ 4)" 6)
 (correr-prueba "Sesta que produce negativo" "(4 ~ 5)" -1)
+(correr-prueba "Multiplicación simple" "(5 * 8)" 40)
+(correr-prueba "División simple" "(12 / 6)" 2)
+;(correr-prueba "Concatenación de dos palabras" "(\"hola\" concat \"mundo\")" "hola mundo")
 (correr-prueba "Operaciones anidadas basicas" "((2 + 3) + @a)" 6)
 
 ;Pruebas de Primitivas Unarias Básicas
