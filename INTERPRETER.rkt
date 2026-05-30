@@ -118,6 +118,17 @@
         expresion
         "}")
         variableLocal-exp)
+    (expresion
+     ("letrec"
+      identificador
+      "(" (separated-list identificador ",") ")"
+       "{"
+      expresion
+      "}"
+      "en"
+      expresion)
+     letrec-exp)
+
     
 
     (primitiva-binaria ("+") primitiva-suma)
@@ -457,6 +468,25 @@
         ids
         valores
         env))))
+
+  (letrec-exp (id params cuerpo body)
+
+  (letrec ((dummy
+            (cerradura params cuerpo (vacio))))
+
+    (let ((real-proc
+           (cerradura
+            params
+            cuerpo
+            (extendido (list id)
+                       (list dummy)
+                       env))))
+
+      (evaluar-expresion
+       body
+       (extendido (list id)
+                  (list real-proc)
+                  env)))))
 ; ===================================
 ; procedimiento-exp
 ; ===================================
@@ -576,3 +606,58 @@
 ;Pruebas de Primitivas Unarias Básicas
 (correr-prueba "Sustracción unitaria sub1" "sub1(5)" 4)
 (correr-prueba "Adición unitaria add1" "add1(@c)" 4)
+
+(correr-prueba "integrantes"
+  "declarar (@integrantes=procedimiento(){\"Helkin_Samuel_Vanessa\";}){@integrantes}"
+  "Helkin_Samuel_Vanessa")
+
+(correr-prueba "decorador saludo"
+  "
+declarar (
+  @integrantes=procedimiento(){\"Helkin_Samuel_Vanessa\";};
+  @saludar=procedimiento(f){
+    procedimiento(){
+      (\"Hola:\" concat evaluar f() finEval)
+    }
+  };
+  @decorate=evaluar @saludar(@integrantes) finEval
+)
+{
+  evaluar @decorate() finEval
+}
+"
+"Hola:Helkin_Samuel_Vanessa")
+
+(correr-prueba "factorial 5"
+"
+declarar (
+  @fact=letrec f(n){
+    Si (n ~ 1) {
+      1
+    } sino {
+      (n * evaluar f(n ~ 1) finEval)
+    }
+  } en @fact
+)
+{
+  evaluar @fact(5) finEval
+}
+"
+120)
+
+(correr-prueba "potencia 2^4"
+"
+declarar (
+  @pow=letrec p(b,e){
+    Si e {
+      (b * evaluar p(b, e ~ 1) finEval)
+    } sino {
+      1
+    }
+  } en @pow
+)
+{
+  evaluar @pow(2,4) finEval
+}
+"
+16)
